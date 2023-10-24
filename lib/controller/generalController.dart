@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -26,6 +29,22 @@ class GeneralController extends ChangeNotifier {
   List<ForcastList> forcastList = [];
   List<ForcastList> sforcastList = [];
   Set<Marker> markers = {};
+  bool isInternet = true;
+  late StreamSubscription<ConnectivityResult> subscription;
+  final Connectivity _connectivity = Connectivity();
+
+  checkInternet() {
+    subscription =
+        _connectivity.onConnectivityChanged.listen((ConnectivityResult result) {
+      if (result == ConnectivityResult.none) {
+        isInternet = false;
+        notifyListeners();
+      } else {
+        isInternet = true;
+        notifyListeners();
+      }
+    });
+  }
 
   checkPermission() async {
     isLoading = false;

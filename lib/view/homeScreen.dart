@@ -1,6 +1,11 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import 'package:stemmweather/controller/authController.dart';
 import 'package:stemmweather/utils/constant.dart';
 
 import '../controller/generalController.dart';
@@ -21,6 +26,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // TODO: implement initState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      genralController.checkInternet();
+
       await genralController.checkPermission();
       await genralController.getPermissions();
 
@@ -29,10 +36,35 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    genralController.subscription.cancel();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Center(child: Text("STEMM WEATHER"))),
+      appBar: AppBar(
+        centerTitle: true,
+        title: Center(
+          child: Text("STEMM WEATHER"),
+        ),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Provider.of<AuthController>(context, listen: false)
+                    .signout(context);
+              },
+              icon: Icon(Icons.logout))
+        ],
+      ),
       body: Consumer<GeneralController>(builder: (context, controller, child) {
+        if (!controller.isInternet) {
+          return Center(
+            child: Lottie.asset('assets/lottie/animation_lo4aweff.json',
+                repeat: false, width: 200),
+          );
+        }
         if (controller.isLoading) {
           return Center(
             child: progressIndicator(),
